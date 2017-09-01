@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+    <head>
+        <title>The Shape of Water but with Keynes instead of Abe Sapien's brother</title>
+    <script src="d3.js"></script>
+    </head>
+    <body>
+        <svg width="1024" height="720" id="moniac">
+            <defs>
+                <style><![CDATA[
+                    .tank {
+                        /*pass*/
+                    }
+                    .income rect {
+                        x: 512px;
+                        y: 10px;
+                    }
+                    .consumerIncome rect{
+                        x: 256px;
+                        y: 180px;
+                    }
+                    .taxRev rect{
+                        x: 766px;
+                        y: 180px;
+                    }
+                    .investment rect{
+                        x: 512px;
+                        y: 360px;
+                    }
+                    .domesticRevenue rect{
+                        x: 512px;
+                        y: 650px;
+                    }
+                    .importExport rect{
+                        x: 766px;
+                        y: 525px;
+                    }
+                    .water {
+                        fill: rgb(100, 100, 225); 
+                        stroke: none;
+                        height: 50px;
+                    }
+                    .brder {
+                        fill: none;
+                        stroke: black;
+                        stroke-width: 4px;
+                    }
+                    .void {
+                        fill: rgb(170,175,150); 
+                        /*height: 50px; /* change it up to ~some variable~ using d3 */
+                        stroke: none;
+                    }
+                    svg {
+                        font-size: 30px;
+                    }
+                    ]]>
+                    </style>
+            </defs>
+            <!-- loose idea: manually make a series of tanks, placed appropriately with CSS-->
+            <!-- holy moley CSS is actually really handy and good in SVG?  my life is a lie. -->
+            <g class="tank income">
+                <rect width=50 height=50  class="brder" />
+                <rect width=50 height=50  class="water" />
+                <rect width=50 height=0 class="void" />
+                <text x=502 y=80>Income</text>
+            </g>
+            <g class="tank consumerIncome">
+                <rect width=50 height=50  class="brder" />
+                <rect width=50 height=50  class="water" />
+                <rect width=50 height=0 class="void" />
+                <text x=206 y=170>Consumer Income</text>
+            </g>
+            <g class="tank taxRev">
+                <rect width=50 height=50  class="brder" />
+                <rect width=50 height=50  class="water" />
+                <rect width=50 height=0 class="void" />
+                <text x=716 y=170>Government</text>
+            </g>
+            <g class="tank investment">
+                <rect width=50 height=50  class="brder" />
+                <rect width=50 height=50  class="water" />
+                <rect width=50 height=0 class="void" />
+                <text x=412 y=350>Investment (banks 'n' so on)</text>
+            </g>
+            <g class="tank domesticRevenue">
+                <rect width=50 height=50  class="brder" />
+                <rect width=50 height=50  class="water" />
+                <rect width=50 height=0 class="void" />
+                <text x=452 y=640>Domestic Revenue</text>
+            </g>
+            <g class="tank importExport">
+                <rect width=50 height=50  class="brder" />
+                <rect width=50 height=50  class="water" />
+                <rect width=50 height=0 class="void" />
+                <text x=700 y=515>Foriegn Investments</text>
+            </g>
+            <g class=arrows stroke="black" fill="transparent">
+                <path d="M 512 60 C 512 60, 256 120, 256 180"/>
+                <path d="M 562 60 C 562 60, 816 120, 816 180"/>
+                <path d="M 306 230 512 360"/>
+                <path d="M 766 230 562 360"/>
+                <path d="M 562 410 766 525" />
+                <path d="M 512 410 512 650" />
+                <path d="M 766 575 562 650" />
+                <path d="M 512 700 C 50 700, 25 60, 512 60" />
+            </g>
+        </svg>
+        <script>
+            //TODO: the entire logic of it all.  Let's worry about it another time.  This is more than I care to do today I think...
+    (function(){
+        var income = 100.0;
+        var consIncome = 0.0;
+        var taxRate = 0.25;
+        var taxBase = 0.0;
+        var govtSaveRatio = 0.9;
+        var saveRatio = 0.1;
+        var consSpendRate = .8;
+        var investment = 0.0;
+        var bankInvRate = 0.5;
+        var domesticRevenue = 0.0;
+        var import_ = 0.0;
+        var importRate = 0.0;
+        var export_ = 0.0;
+        var exportRate = 0.0;
+
+        var update = function(){
+            var temp = income;
+            income = domesticRevenue;
+            var toGov = temp * taxRate;
+            var toCons = temp - (toGov);
+            var govToInv = (govtSaveRatio * taxBase);
+            taxBase -= govToInv;
+            var consToInv = (saveRatio * consIncome);
+            consIncome -= consToInv;
+            var consSpending = consIncome * consSpendRate;
+            investment += consToInv + govToInv;
+            //TODO: would they really spend their entire income/investment at once?  WHO knows.  Add a valve beneath them.  Maybe this would work better with some object oriented nonsense.
+            //For now, no valves, no rules, no masters.
+            var toGDP = investment *bankInvRate;
+            investment -= toGDP;
+            domesticRevenue = consSpending + toGDP;
+            consIncome -= consSpending;
+
+
+            consIncome += toCons;
+            taxBase += toGov;
+        };
+
+        var display = function(){
+            document.querySelector(".income .void").setAttribute("height", (50 - income/2) + "px");
+            document.querySelector(".consumerIncome .void").setAttribute("height", (50 - consIncome/2) + "px");
+            document.querySelector(".taxRev .void").setAttribute("height", (50 - taxBase/2) + "px");
+            document.querySelector(".investment .void").setAttribute("height", (50 - investment/2) + "px");
+        
+            document.querySelector(".domesticRevenue .void").setAttribute("height", (50 - domesticRevenue/2) + "px");
+            document.querySelector(".importExport .void").setAttribute("height", (50 - import_/2) + "px");
+    };
+setInterval(function(){
+    update();
+    display();
+}, 1000);
+})();
+        </script>
+    </body>
+</html>
